@@ -30,7 +30,7 @@ export default function RootLayout({
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 {children}
                 <Toaster
-                    position="bottom-left"
+                    position="bottom-right"
                     reverseOrder={false}
                     gutter={8}
                     containerClassName=""
@@ -42,17 +42,13 @@ export default function RootLayout({
                         duration: 5000,
                         removeDelay: 1000,
                         style: {
-                            background: "#363636",
-                            color: "#fff",
+                            background: "white",
+                            color: "oklch(66.6% 0.179 58.318)",
                         },
 
-                        // Default options for specific types
-                        success: {
-                            duration: 3000,
-                            iconTheme: {
-                                primary: "green",
-                                secondary: "black",
-                            },
+                        iconTheme: {
+                            primary: "oklch(66.6% 0.179 58.318)",
+                            secondary: "white",
                         },
                     }}
                 />
