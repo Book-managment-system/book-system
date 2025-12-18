@@ -6,52 +6,28 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { safeParse, z } from "zod";
 import Link from "next/link";
 import React from "react";
-
-const signupSchema = z
-    .object({
-        firstName: z
-            .string()
-            .min(1, "First name is required")
-            .min(2, "First name must be at least 2 characters"),
-        lastName: z
-            .string()
-            .min(1, "Last name is required")
-            .min(2, "Last name must be at least 2 characters"),
-        email: z.email("Invalid email address"),
-        phone: z
-            .string()
-            .min(1, "Phone number is required")
-            .regex(
-                /^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/,
-                "Invalid phone number format"
-            ),
-        address: z.string().min(1, "Shipping address is required"),
-        username: z.string().min(1, "Username is required"),
-        password: z.string().min(6, "Password must be at least 6 characters"),
-        passwordConfirmation: z
-            .string()
-            .min(6, "Password confirmation must be at least 6 characters"),
-    })
-    .refine((data) => data.password === data.passwordConfirmation, {
-        message: "Passwords do not match",
-        path: ["passwordConfirmation"],
-    });
-
-type FormData = z.infer<typeof signupSchema>;
+import { SignUpFormData, signupSchema } from "@/types/authentication/signup";
+import { signUp } from "@/api/authentication/signup";
+import toast from "react-hot-toast";
 
 export default function SignupForm() {
     const {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<FormData>({
+    } = useForm<SignUpFormData>({
         resolver: zodResolver(signupSchema),
     });
 
-    const onSubmit = (data: FormData) => {
-        console.log("Form submitted:", data);
-        console.log(errors.root);
-        alert("Account created successfully!");
+    const onSubmit = async (data: SignUpFormData) => {
+        toast.promise(signUp(data), {
+            loading: "Signing up...",
+            success: "Signed up successfully!",
+            error: (err:Error) => err.message,
+        });
+        
+        
+        
     };
 
     return (
