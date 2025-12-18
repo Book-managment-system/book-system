@@ -32,7 +32,7 @@ export default function SignupForm() {
 
     return (
         <div className="min-h-screen bg-linear-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+            <div className="bg-white flex-col flex max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl w-full max-w-md p-8">
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-600 rounded-full mb-4">
@@ -47,7 +47,7 @@ export default function SignupForm() {
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                <form className="space-y-5 overflow-y-auto">
                     <div>
                         <Input
                             label="First Name"
@@ -84,6 +84,11 @@ export default function SignupForm() {
                             placeholder="MohammedMoeen"
                             {...register("username")}
                         />
+                        {errors.username && (
+                            <p className="text-red-500 text-sm mt-1">
+                                {errors.username.message}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <Input
@@ -155,13 +160,15 @@ export default function SignupForm() {
                             </p>
                         )}
                     </div>
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        className="w-full bg-amber-600 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 hover:bg-amber-700 hover:shadow-xl active:scale-95">
-                        Sign Up
-                    </button>
                 </form>
+
+                {/* Submit Button */}
+                <button
+                    type="button"
+                    className="w-full mt-5 bg-amber-600 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 hover:bg-amber-700 hover:shadow-xl active:scale-95"
+                    onClick={handleSubmit(onSubmit)}>
+                    Sign Up
+                </button>
 
                 {/* Login Link */}
                 <div className="mt-6 text-center">
