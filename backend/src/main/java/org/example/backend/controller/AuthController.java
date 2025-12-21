@@ -1,6 +1,5 @@
 package org.example.backend.controller;
 
-import org.example.backend.model.dto.LoginRequest;
 import org.example.backend.model.dto.LoginResponse;
 import org.example.backend.model.dto.SignupRequest;
 import org.example.backend.model.entity.User;
