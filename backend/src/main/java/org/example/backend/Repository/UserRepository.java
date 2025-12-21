@@ -65,12 +65,6 @@ public class UserRepository {
         );
     }
 
-    /**
-     * Finds a user by username.
-     *
-     * @param username The username to search for
-     * @return Optional containing the user if found, empty otherwise
-     */
     public Optional<User> findByUsername(String username) {
         String query = "SELECT user_id, username, password, first_name, last_name, email, phone, shipping_address, role, created_at " +
                 "FROM Users WHERE username = ?";
@@ -82,12 +76,6 @@ public class UserRepository {
         }
     }
 
-    /**
-     * Finds a user by user ID.
-     *
-     * @param userId The user ID to search for
-     * @return Optional containing the user if found, empty otherwise
-     */
     public Optional<User> findById(Integer userId) {
         String query = "SELECT user_id, username, password, first_name, last_name, email, phone, shipping_address, role, created_at " +
                 "FROM Users WHERE user_id = ?";
@@ -99,9 +87,6 @@ public class UserRepository {
         }
     }
 
-    /**
-     * RowMapper for mapping ResultSet to User entity.
-     */
     private RowMapper<User> userRowMapper() {
         return (rs, rowNum) -> {
             Integer userId = rs.getInt("user_id");
