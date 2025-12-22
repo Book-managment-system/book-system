@@ -64,6 +64,25 @@ public class JwtService {
                 .compact();
     }
 
+    // Generates a refresh token for a user with a specific expiration date.
+    public String generateRefreshToken(Integer userId, String username, Date expiration) {
+        Date now = new Date();
+
+        return Jwts.builder()
+                .subject(username)
+                .claim("userId", userId)
+                .claim("type", "refresh")
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(secretKey)
+                .compact();
+    }
+
+    // Extracts the expiration date from a JWT token.
+    public Date extractExpiration(String token) {
+        return extractClaims(token).getExpiration();
+    }
+
     // Validates a JWT token.
     public boolean validateToken(String token) {
         try {

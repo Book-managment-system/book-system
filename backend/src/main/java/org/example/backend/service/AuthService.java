@@ -8,7 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import java.time.ZoneId;
+import java.util.Date;
 
 /**
  * Service for handling authentication operations including login, token refresh, and logout.
@@ -56,13 +57,19 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        // Extract expiration date from the old refresh token
+        Date oldTokenExpiration = jwtService.extractExpiration(refreshToken);
+        LocalDateTime expiresAt = LocalDateTime.ofInstant(
+                oldTokenExpiration.toInstant(),
+                ZoneId.systemDefault()
+        );
+
         // Token rotation: delete old refresh token and issue new ones
         refreshTokenRepository.deleteByToken(refreshToken);
 
         String newAccessToken = jwtService.generateAccessToken(userId, username, user.getRole());
-        String newRefreshToken = jwtService.generateRefreshToken(userId, username);
+        String newRefreshToken = jwtService.generateRefreshToken(userId, username, oldTokenExpiration);
 
-        LocalDateTime expiresAt = LocalDateTime.now().plus(7, ChronoUnit.DAYS);
         refreshTokenRepository.save(userId, newRefreshToken, expiresAt);
 
         return new LoginResponse(newAccessToken, newRefreshToken);
