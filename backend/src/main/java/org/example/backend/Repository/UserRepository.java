@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 public class UserRepository {
@@ -15,7 +18,6 @@ public class UserRepository {
     public UserRepository(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;
     }
-
     public boolean existsByUsername(String username,int user_id){
         String query = " select count(*) from users where username = ? and user_id != ?";
         Integer count = jdbcTemplate.queryForObject(query,Integer.class,username,user_id);
@@ -50,6 +52,39 @@ public class UserRepository {
         });
         return returned;
     }
+
+    public User get(String username){
+        String query = "select * from users where username = ?";
+        User user = jdbcTemplate.queryForObject(query, new Object[]{
+                username,
+        }, new RowMapper<User>() {
+            @Override
+            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                User tempuser = new User();
+                tempuser.setUserId(rs.getInt("user_id"));
+                tempuser.setPassword(rs.getString("password"));
+                tempuser.setFirstName(rs.getString("first_name"));
+                if(Objects.equals(rs.getString("role"), "Admin"))
+                    tempuser.setRole(Role.Admin);
+                else if(Objects.equals(rs.getString("role"), "Customer"))
+                    tempuser.setRole(Role.Customer);
+                return tempuser;
+            }
+        });
+        return user;
+    }
+
+    public Optional<User> findByUsername(String username) {
+        String query = "SELECT user_id, username, password, first_name, last_name, email, phone, shipping_address, role, created_at " +
+                "FROM Users WHERE username = ?";
+        try {
+            User user = jdbcTemplate.queryForObject(query, userRowMapper(), username);
+            return Optional.ofNullable(user);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
     public User findById(int userId){
         String sql = "select * from users where user_id = ?";
         return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
@@ -103,5 +138,21 @@ public class UserRepository {
         String sql = "delete from users where user_id = ?";
         return jdbcTemplate.update(sql,userId);
     }
+    private RowMapper<User> userRowMapper() {
+        return (rs, rowNum) -> {
+            Integer userId = rs.getInt("user_id");
+            String username = rs.getString("username");
+            String password = rs.getString("password");
+            String firstName = rs.getString("first_name");
+            String lastName = rs.getString("last_name");
+            String email = rs.getString("email");
+            String phone = rs.getString("phone");
+            String shippingAddress = rs.getString("shipping_address");
+            Role role = Role.valueOf(rs.getString("role"));
+            Timestamp createdAtTimestamp = rs.getTimestamp("created_at");
+            java.time.LocalDateTime createdAt = createdAtTimestamp != null ? createdAtTimestamp.toLocalDateTime() : null;
 
+            return new User(userId, username, password, firstName, lastName, email, shippingAddress, phone, createdAt, role);
+        };
+    }
 }

@@ -100,3 +100,18 @@ CREATE TABLE IF NOT EXISTS BillingInfo
     FOREIGN KEY (user_id) REFERENCES Users (user_id)
     );
 
+-- Refresh tokens table for JWT authentication
+CREATE TABLE IF NOT EXISTS RefreshTokens
+(
+    token_id    INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id     INT       NOT NULL,
+    token       VARCHAR(500) NOT NULL UNIQUE,
+    expires_at  TIMESTAMP NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users (user_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON RefreshTokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON RefreshTokens(token);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON RefreshTokens(expires_at);
+
