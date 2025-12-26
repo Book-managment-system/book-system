@@ -1,5 +1,6 @@
 package org.example.backend.controller;
 
+import org.example.backend.model.dto.LoginRequest;
 import org.example.backend.model.dto.LoginResponse;
 import org.example.backend.model.dto.SignupRequest;
 import org.example.backend.model.entity.User;
@@ -35,6 +36,16 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        try {
+            LoginResponse response = authService.login(request);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest request) {
         try {
@@ -42,6 +53,17 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody RefreshTokenRequest request) {
+        try {
+            authService.logout(request.getRefreshToken());
+            return ResponseEntity.ok("Logged out successfully");
+        } catch (Exception e) {
+            // Logout should be idempotent - even if token doesn't exist, consider it successful
+            return ResponseEntity.ok("Logged out successfully");
         }
     }
 

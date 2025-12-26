@@ -2,13 +2,16 @@ package org.example.backend.service;
 
 import org.example.backend.Repository.RefreshTokenRepository;
 import org.example.backend.Repository.UserRepository;
+import org.example.backend.model.dto.LoginRequest;
 import org.example.backend.model.dto.LoginResponse;
 import org.example.backend.model.entity.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 /**
@@ -18,17 +21,43 @@ import java.util.Date;
 @Service
 public class AuthService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenRepository refreshTokenRepository;
 
     public AuthService(
             UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
             JwtService jwtService,
             RefreshTokenRepository refreshTokenRepository
     ) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenRepository = refreshTokenRepository;
+    }
+
+    // Authenticates a user and generates access and refresh tokens.
+    @Transactional
+    public LoginResponse login(LoginRequest loginRequest) {
+        String username = loginRequest.getUsername();
+        String password = loginRequest.getPassword();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("Invalid username or password");
+        }
+
+        String accessToken = jwtService.generateAccessToken(user.getUserId(), user.getUsername(), user.getRole());
+        String refreshToken = jwtService.generateRefreshToken(user.getUserId(), user.getUsername());
+
+        // Calculate expiration time for refresh token (7 days from now)
+        LocalDateTime expiresAt = LocalDateTime.now().plus(7, ChronoUnit.DAYS);
+        refreshTokenRepository.save(user.getUserId(), refreshToken, expiresAt);
+
+        return new LoginResponse(accessToken, refreshToken);
     }
 
 
@@ -75,4 +104,11 @@ public class AuthService {
         return new LoginResponse(newAccessToken, newRefreshToken);
     }
 
+    // Logs out a user by deleting their refresh token from the database.
+    @Transactional
+    public void logout(String refreshToken) {
+        if (refreshToken != null && !refreshToken.isEmpty()) {
+            refreshTokenRepository.deleteByToken(refreshToken);
+        }
+    }
 }
