@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Calendar, DollarSign, TrendingUp, Users, Package, ShoppingCart } from 'lucide-react';
 import axios from 'axios';
 import { redirect } from 'next/navigation';
-import { fetchBookReport, fetchTopBooks, fetchTopCustomers, fetchPreviousMonthSales, fetchDailySales } from '@/api/reports/reports';
+import { fetchBookReport, fetchTopBooks, fetchTopCustomers, fetchPreviousMonthSales, fetchDailySales,getAllbooks } from '@/api/reports/reports';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { getAccessToken } from '@/lib/token-storage';
@@ -15,9 +15,32 @@ const AdminDashboard = () => {
    const [topBooks,setTopBooks] = useState<any[]>([]);
    const [topCustomers, setTopCustomers] = useState<any>(null);
    const [previousMonthSales, setPreviousMonthSales] = useState<any>(null);
+   const [allBooks, setallBooks] = useState<any>(null);
    const [dailySales, setDailySales] = useState<any>(null);
    const [errors, setErrors] = useState<{[key: string]: string}>({});
-  const token = getAccessToken()||"";
+   const token = getAccessToken()||"";
+  React.useEffect(() => {
+        const getbooks = async () => {
+            try {
+
+                const data = await getAllbooks(
+                    token
+                );
+                console.log("Fetched asankjns:", data);
+
+                setallBooks(data);
+            } catch (err: any) {
+                if (err.message === "FORBIDDEN") {
+                    setErrors(prev => ({ ...prev, bookOrders: "You do not have permission to view this data." }));
+                } else if (err.message === "UNAUTHORIZED") {
+                    redirect("/login");
+                } else {
+                    setErrors(prev => ({ ...prev, bookOrders: "Unexpected server error." }));
+                }
+            }
+        };
+        getbooks();
+    }, [token]);
   React.useEffect(() => {
         const loadReport = async () => {
             try {
@@ -153,12 +176,6 @@ const AdminDashboard = () => {
     { rank: 5, name: 'Jessica Williams', totalPurchases: 695.75, orders: 7 }
   ];
 
-  const allBooks = [
-    { isbn: '9781491950357', title: 'Learning Python', publisher_id: 1, publication_year: 2019, selling_price: 64.99, category: 'Science', number_of_books: 10, threshold: 5 },
-    { isbn: '9780596007973', title: 'Head First Java', publisher_id: 1, publication_year: 2005, selling_price: 45.50, category: 'Science', number_of_books: 8, threshold: 5 },
-    { isbn: '9780143127550', title: 'The Martian', publisher_id: 2, publication_year: 2014, selling_price: 15.99, category: 'Science', number_of_books: 20, threshold: 5 },
-    { isbn: '9780062315007', title: 'To Kill a Mockingbird', publisher_id: 3, publication_year: 2014, selling_price: 10.99, category: 'Art', number_of_books: 15, threshold: 5 }
-  ];
 
   const topBooks2 = [
     { rank: 1, title: 'Learning Python', isbn: '9781491950357', category: 'Science', copiesSold: 145 },
@@ -397,7 +414,7 @@ const AdminDashboard = () => {
               className="border border-gray-300 rounded-lg px-4 py-2 w-full md:w-96 focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="">Choose a book...</option>
-              {allBooks.map((book, index) => (
+              {allBooks?.map((book, index) => (
                 <option key={index} value={book.isbn}>{book.title}</option>
               ))}
             </select>

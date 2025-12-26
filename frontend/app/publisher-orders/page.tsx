@@ -80,7 +80,7 @@ export default function PublisherOrdersPage() {
                 </div>
                 <Button
                     variant="outline"
-                    onClick={() => router.push("/admindashborad")}
+                    onClick={() => router.push("/admin_dashboard")}
                 >
                     Back to Dashboard
                 </Button>

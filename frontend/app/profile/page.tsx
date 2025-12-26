@@ -54,7 +54,7 @@ const ProfilePage: React.FC = () => {
         setMessage(result);
 
         setTimeout(() => {
-          router.push("/cart");
+          router.push("/home");
         }, 2000);
       } else {
         setMessage(result);
