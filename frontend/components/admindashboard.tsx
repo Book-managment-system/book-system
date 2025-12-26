@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Calendar, DollarSign, TrendingUp, Users, Package } from 'lucide-react';
+import { Calendar, DollarSign, TrendingUp, Users, Package, ShoppingCart } from 'lucide-react';
 import axios from 'axios';
 import { redirect } from 'next/navigation';
 import { fetchBookReport, fetchTopBooks, fetchTopCustomers, fetchPreviousMonthSales, fetchDailySales } from '@/api/reports/reports';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 import { getAccessToken } from '@/lib/token-storage';
 const AdminDashboard = () => {
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedBook, setSelectedBook] = useState('');
    const [bookOrders, setBookOrders] = React.useState<any>(null);
-   const [topBooks,setTopBooks] = useState<any>(null);
+   const [topBooks,setTopBooks] = useState<any[]>([]);
    const [topCustomers, setTopCustomers] = useState<any>(null);
    const [previousMonthSales, setPreviousMonthSales] = useState<any>(null);
    const [dailySales, setDailySales] = useState<any>(null);
@@ -46,8 +49,7 @@ const AdminDashboard = () => {
                     token
                 );
                 console.log("Fetched orders:", data);
-                setTopBooks(data);
-                setErrors(prev => ({ ...prev, topBooks: '' }));
+                setTopBooks(Array.isArray(data) ? data : []);
             } catch (err: any) {
                 if (err.message === "FORBIDDEN") {
                     setErrors(prev => ({ ...prev, topBooks: "You do not have permission to view this data." }));
@@ -143,7 +145,7 @@ const AdminDashboard = () => {
   const dailySalesData = dailySales || []
 
 
-  const topCustomersData = topCustomers || [
+  const topCustomersData = Array.isArray(topCustomers) ? topCustomers : [
     { rank: 1, name: 'Sarah Johnson', totalPurchases: 1250.00, orders: 12 },
     { rank: 2, name: 'Michael Chen', totalPurchases: 980.50, orders: 8 },
     { rank: 3, name: 'Emily Rodriguez', totalPurchases: 875.25, orders: 10 },
@@ -173,17 +175,27 @@ const AdminDashboard = () => {
 
 
 
-  const booksList = topBooks?.map((book:any) => book.title);
+  const booksList = Array.isArray(topBooks) ? topBooks.map((book:any) => book.title) : [];
 
-  const chartData = topBooks?.slice(0, 5).map((book:any) => ({
+  const chartData = Array.isArray(topBooks) ? topBooks.slice(0, 5).map((book:any) => ({
     name: book.book?.title?.length > 15 ? book.book?.title.substring(0, 15) + '...' : book.book?.title,
     copies: book.quantity
-  }));
+  })) : [];
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Admin Reports Dashboard</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Admin Reports Dashboard</h1>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/publisher-orders")}
+            className="flex items-center gap-2"
+          >
+            <ShoppingCart className="h-4 w-4" />
+            Manage Publisher Orders
+          </Button>
+        </div>
 
         {/* Report 1: Previous Month Sales */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -342,17 +354,25 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {topBooks?.map((book:any,idx :number) => (
-                  <tr key={book.book?.isbn || idx} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-lg font-bold text-teal-600">#{idx+1}</span>
+                {Array.isArray(topBooks) && topBooks.length > 0 ? (
+                  topBooks.map((book:any,idx :number) => (
+                    <tr key={book.book?.isbn || idx} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-lg font-bold text-teal-600">#{idx+1}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{book.book?.isbn}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{book.book?.title}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{book.quantity}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${book.totalprofit?.toFixed(2)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                      No data available
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{book.book?.isbn}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{book.book?.title}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{book.quantity}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${book.totalprofit?.toFixed(2)}</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -385,11 +405,11 @@ const AdminDashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-red-50 p-4 rounded-lg">
               <p className="text-sm text-gray-600">Times Ordered (Replenishment)</p>
-              <p className="text-2xl font-bold text-red-600">{bookOrders?.numberoforders}</p>
+              <p className="text-2xl font-bold text-red-600">{bookOrders?.numberoforders ?? 0}</p>
             </div>
             <div className="bg-amber-50 p-4 rounded-lg">
               <p className="text-sm text-gray-600">Amount ordered</p>
-              <p className="text-2xl font-bold text-amber-600">{bookOrders?.numberoforders * 30}</p>
+              <p className="text-2xl font-bold text-amber-600">{(bookOrders?.numberoforders ?? 0) * 50}</p>
             </div>
           </div>
         </div>
