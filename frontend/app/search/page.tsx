@@ -36,7 +36,11 @@ export default function SearchPage() {
                 }
             } catch (err) {
                 if (!isCancelled) {
-                    setError(err instanceof Error ? err.message : "Failed to search books");
+                    setError(
+                        err instanceof Error
+                            ? err.message
+                            : "Failed to search books"
+                    );
                     setBooks([]);
                 }
             } finally {
@@ -71,8 +75,10 @@ export default function SearchPage() {
                             {loading
                                 ? "Loading..."
                                 : books.length === 0
-                                    ? "No books found"
-                                    : `Found ${books.length} book${books.length === 1 ? "" : "s"}`}
+                                ? "No books found"
+                                : `Found ${books.length} book${
+                                      books.length === 1 ? "" : "s"
+                                  }`}
                         </p>
                     </div>
 
