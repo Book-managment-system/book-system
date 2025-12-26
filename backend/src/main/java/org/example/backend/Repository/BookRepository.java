@@ -102,7 +102,8 @@ public class BookRepository {
         this.jdbcTemplate.update(query, isbn);
     }
 
-    public List<Book> readAll() {
+    public List<Book> 
+      All() {
         String query = "SELECT * FROM books";
         List<Book> books = this.jdbcTemplate.query(query, new BookRowMapper());
         return  books;
@@ -118,6 +119,10 @@ public class BookRepository {
         String query = "SELECT COUNT(*) FROM books WHERE isbn = ?";
         Integer count = jdbcTemplate.queryForObject(query, Integer.class, isbn);
         return count != null && count > 0;
+    }
+  public void deductStock(String isbn, int quantity) {
+        String sql = "UPDATE Books SET number_of_books = number_of_books - ? WHERE isbn = ?";
+        jdbcTemplate.update(sql, quantity, isbn);
     }
 
 }
