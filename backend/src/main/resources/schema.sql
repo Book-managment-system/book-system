@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS BookAuthors
     FOREIGN KEY (isbn) REFERENCES Books (isbn),
     FOREIGN KEY (author_id) REFERENCES Authors (author_id)
 );
--- CREATE TYPE order_status AS ENUM ('Pending', 'Confirmed');
+CREATE TYPE order_status AS ENUM ('Pending', 'Confirmed');
 CREATE TABLE IF NOT EXISTS PublisherOrders
 (
     order_id   INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -114,4 +114,39 @@ CREATE TABLE IF NOT EXISTS RefreshTokens
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON RefreshTokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON RefreshTokens(token);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON RefreshTokens(expires_at);
+
+CREATE OR REPLACE FUNCTION create_publisher_order_on_low_stock()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF OLD.number_of_books >= OLD.threshold AND NEW.number_of_books < NEW.threshold THEN
+        INSERT INTO PublisherOrders (isbn, quantity, status)
+        VALUES (NEW.isbn, 50, 'Pending'::order_status);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_create_publisher_order
+AFTER UPDATE ON Books
+FOR EACH ROW
+WHEN (OLD.number_of_books IS DISTINCT FROM NEW.number_of_books)
+EXECUTE FUNCTION create_publisher_order_on_low_stock();
+
+CREATE OR REPLACE FUNCTION add_stock_on_order_confirmation()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF OLD.status = 'Pending'::order_status AND NEW.status = 'Confirmed'::order_status THEN
+        UPDATE Books
+        SET number_of_books = number_of_books + NEW.quantity
+        WHERE isbn = NEW.isbn;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_add_stock_on_confirmation
+AFTER UPDATE ON PublisherOrders
+FOR EACH ROW
+WHEN (OLD.status IS DISTINCT FROM NEW.status)
+EXECUTE FUNCTION add_stock_on_order_confirmation();
 
