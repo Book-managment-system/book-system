@@ -4,7 +4,7 @@ const BASE_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/v1/api";
 
 const ACCESS_TOKEN =
-    "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJKb2huIiwidXNlcklkIjoxMSwicm9sZSI6IkN1c3RvbWVyIiwidHlwZSI6ImFjY2VzcyIsImlhdCI6MTc2Njc2NDM3NywiZXhwIjoxNzY2NzY3OTc3fQ.BX5_HXqn1IBjv6iAsnvBJ_iGFjiviriLHG0GOfGfWQewaYxLKD7YMmvRbKSK1LG1snu2SjS9u3gfTyTrDI6hcA";
+    "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJmZGoiLCJ1c2VySWQiOjEzLCJyb2xlIjoiQ3VzdG9tZXIiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzY2NzY4MTMzLCJleHAiOjE3NjY3NzE3MzN9.FHG9qQCc8w3j7qg6dV1gKtpPyrqYVpXx3Uiac6AkY9oDopi2qMzeA4739lLEkcQGpU7xAJGEFIUvs5wqT1b3gg";
 
 /* =========================
    Types
@@ -21,8 +21,9 @@ export interface UserUpdate {
 }
 
 export interface ChangePasswordRequest {
-    oldPassword: string;
-    newPassword: string;
+  userId: number; // add userId from token or context
+  currentPassword: string;
+  newPassword: string;
 }
 
 /* =========================
@@ -59,24 +60,23 @@ export async function updateProfile(user: UserUpdate): Promise<string> {
     }
 }
 
-export async function changePassword(
-    data: ChangePasswordRequest
-): Promise<string> {
-    try {
-        const res = await fetch(`${BASE_URL}/user/password`, {
-            method: "PUT",
-            headers: {
-                "Authorization": ACCESS_TOKEN,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data),
-            mode: "cors"
-        });
+export async function updatePassword(request: ChangePasswordRequest): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await fetch(`${BASE_URL}/user/password`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": ACCESS_TOKEN
+      },
+      body: JSON.stringify(request),
+      mode: "cors"
+    });
 
-        const text = await res.text();
-        return text || "Password updated";
-    } catch (err) {
-        console.error("Change password error:", err);
-        throw err;
-    }
+    const text = await res.text();
+    // If backend returns an error message, we keep it
+    return { success: res.status === 200, message: text || "No response from server" };
+  } catch (err: any) {
+    console.error("Update password error:", err);
+    return { success: false, message: err.message || "Network error or backend unreachable" };
+  }
 }
