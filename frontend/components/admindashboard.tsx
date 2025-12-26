@@ -1,0 +1,343 @@
+import React, { useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Calendar, DollarSign, TrendingUp, Users, Package } from 'lucide-react';
+import axios from 'axios';
+import { fetchBookReport, fetchTopBooks, fetchTopCustomers, fetchPreviousMonthSales, fetchDailySales } from '@/api/reports/reports';
+const AdminDashboard = () => {
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedBook, setSelectedBook] = useState('');
+   const [bookOrders, setBookOrders] = React.useState<any>(null);
+   const [topBooks,setTopBooks] = useState<any>(null);
+   const [topCustomers, setTopCustomers] = useState<any>(null);
+   const [previousMonthSales, setPreviousMonthSales] = useState<any>(null);
+   const [dailySales, setDailySales] = useState<any>(null);
+  const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5b3VzZSIsInVzZXJJZCI6MSwicm9sZSI6IkN1c3RvbWVyIiwidHlwZSI6ImFjY2VzcyIsImlhdCI6MTc2Njc1NzQ4OSwiZXhwIjoxNzY2NzU4Mzg5fQ.8WFmBQyUNumtpJzyh6Jh_uEaPsfaNrPfkyEEY6ipoGHE-0asayN0Xz4MNr55kGXnbq2Py-8b08g7cxFkcwtvjw"
+  React.useEffect(() => {
+        const loadReport = async () => {
+            try {
+                const data = await fetchBookReport(
+                    selectedBook,
+                    token
+                );
+                console.log("Fetched orders:", data);
+                setBookOrders(data);
+            } catch (err: any) {
+                console.error("Error fetching report:", err);
+            } finally {
+            }
+        };
+
+        loadReport();
+    }, [token,selectedBook]);
+
+      React.useEffect(() => {
+        const loadReport = async () => {
+            try {
+                const data = await fetchTopBooks(
+                    token
+                );
+                console.log("Fetched orders:", data);
+                setTopBooks(data);
+            } catch (err: any) {
+                console.error("Error fetching report:", err);
+            } finally {
+            }
+        };
+
+        loadReport();
+    }, [token]);
+
+      React.useEffect(() => {
+        const loadTopCustomers = async () => {
+            try {
+                const data = await fetchTopCustomers(
+                    token
+                );
+                console.log("Fetched top customers:", data);
+                setTopCustomers(data);
+            } catch (err: any) {
+                console.error("Error fetching top customers:", err);
+            } finally {
+            }
+        };
+
+        loadTopCustomers();
+    }, [token]);
+
+      React.useEffect(() => {
+        const loadPreviousMonthSales = async () => {
+            try {
+                const data = await fetchPreviousMonthSales(
+                    token
+                );
+                console.log("Fetched previous month sales:", data);
+                setPreviousMonthSales(data);
+            } catch (err: any) {
+                console.error("Error fetching previous month sales:", err);
+            } finally {
+            }
+        };
+
+        loadPreviousMonthSales();
+    }, [token]);
+
+      React.useEffect(() => {
+        const loadDailySales = async () => {
+            if (selectedDate) {
+                try {
+                    const data = await fetchDailySales(
+                        selectedDate,
+                        token
+                    );
+                    console.log("Fetched daily sales:", data);
+                    setDailySales(data);
+                } catch (err: any) {
+                    console.error("Error fetching daily sales:", err);
+                } finally {
+                }
+            }
+        };
+
+        loadDailySales();
+    }, [selectedDate, token]);
+
+  const previousMonthSalesData = previousMonthSales || {
+    totalSales: 45780.50,
+    totalOrders: 342,
+    month: 'November 2024'
+  };
+
+  const dailySalesData = dailySales || []
+
+
+  const topCustomersData = topCustomers || [
+    { rank: 1, name: 'Sarah Johnson', totalPurchases: 1250.00, orders: 12 },
+    { rank: 2, name: 'Michael Chen', totalPurchases: 980.50, orders: 8 },
+    { rank: 3, name: 'Emily Rodriguez', totalPurchases: 875.25, orders: 10 },
+    { rank: 4, name: 'David Kim', totalPurchases: 720.00, orders: 6 },
+    { rank: 5, name: 'Jessica Williams', totalPurchases: 695.75, orders: 7 }
+  ];
+
+  const allBooks = [
+    { isbn: '9781491950357', title: 'Learning Python', publisher_id: 1, publication_year: 2019, selling_price: 64.99, category: 'Science', number_of_books: 10, threshold: 5 },
+    { isbn: '9780596007973', title: 'Head First Java', publisher_id: 1, publication_year: 2005, selling_price: 45.50, category: 'Science', number_of_books: 8, threshold: 5 },
+    { isbn: '9780143127550', title: 'The Martian', publisher_id: 2, publication_year: 2014, selling_price: 15.99, category: 'Science', number_of_books: 20, threshold: 5 },
+    { isbn: '9780062315007', title: 'To Kill a Mockingbird', publisher_id: 3, publication_year: 2014, selling_price: 10.99, category: 'Art', number_of_books: 15, threshold: 5 }
+  ];
+
+  const topBooks2 = [
+    { rank: 1, title: 'Learning Python', isbn: '9781491950357', category: 'Science', copiesSold: 145 },
+    { rank: 2, title: 'Head First Java', isbn: '9780596007973', category: 'Science', copiesSold: 132 },
+    { rank: 3, title: 'The Martian', isbn: '9780143127550', category: 'Science', copiesSold: 118 },
+    { rank: 4, title: 'To Kill a Mockingbird', isbn: '9780062315007', category: 'Art', copiesSold: 105 },
+    { rank: 5, title: 'History Unveiled', isbn: '9780000000001', category: 'History', copiesSold: 98 },
+    { rank: 6, title: 'Tech Revolution', isbn: '9780000000002', category: 'Technology', copiesSold: 87 },
+    { rank: 7, title: 'Art of Living', isbn: '9780000000003', category: 'Art', copiesSold: 76 },
+    { rank: 8, title: 'Digital Future', isbn: '9780000000004', category: 'Technology', copiesSold: 69 },
+    { rank: 9, title: 'Garden Guide', isbn: '9780000000005', category: 'Nature', copiesSold: 64 },
+    { rank: 10, title: 'Fitness Journey', isbn: '9780000000006', category: 'Health', copiesSold: 58 }
+  ];
+
+
+
+  const booksList = topBooks?.map((book:any) => book.title);
+
+  const chartData = topBooks?.slice(0, 5).map((book:any) => ({
+    name: book.book?.title?.length > 15 ? book.book?.title.substring(0, 15) + '...' : book.book?.title,
+    copies: book.quantity
+  }));
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-800 mb-8">Admin Reports Dashboard</h1>
+
+        {/* Report 1: Previous Month Sales */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex items-center mb-4">
+            <DollarSign className="w-6 h-6 text-blue-600 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-800">Total Sales - Previous Month</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600">Month</p>
+              <p className="text-2xl font-bold text-blue-600">{previousMonthSalesData.month}</p>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600">Total Sales</p>
+              <p className="text-2xl font-bold text-green-600">${previousMonthSalesData.totalSales?.toFixed(2)}</p>
+            </div>
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600">Total Orders</p>
+              <p className="text-2xl font-bold text-purple-600">{previousMonthSalesData.totalOrders}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Report 2: Sales on Specific Day */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex items-center mb-4">
+            <Calendar className="w-6 h-6 text-indigo-600 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-800">Sales on Specific Day</h2>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Select Date:</label>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="bg-indigo-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600">Total Sales</p>
+              <p className="text-2xl font-bold text-indigo-600">${Array.isArray(dailySalesData) 
+                ? dailySalesData.reduce((total: number, item: any) => total + (item.totalprofit || 0), 0)?.toFixed(2) 
+                : (dailySalesData?.totalSales || 0)?.toFixed(2) || '0.00'}</p>
+            </div>
+            <div className="bg-pink-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600">Total Books Sold</p>
+              <p className="text-2xl font-bold text-pink-600">{Array.isArray(dailySalesData) 
+                ? dailySalesData.reduce((total: number, item: any) => total + (item.quantity || 0), 0) 
+                : (dailySalesData?.totalOrders || 0)}</p>
+            </div>
+          </div>
+          {Array.isArray(dailySalesData) && dailySalesData.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ISBN</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book Title</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity Sold</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Profit</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {dailySalesData.map((item: any, index: number) => (
+                    <tr key={item.book?.isbn || index} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.book?.isbn}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.book?.title}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.quantity}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.totalprofit?.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Report 3: Top 5 Customers */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex items-center mb-4">
+            <Users className="w-6 h-6 text-orange-600 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-800">Top 5 Customers (Last 3 Months)</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number of items</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {topCustomersData.map((customer:any, index:any) => (
+                  <tr key={customer.rank || index + 1} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-lg font-bold text-orange-600">#{customer.rank || index + 1}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{customer.user?.firstName || customer.customerName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.numberoforders || customer.orderCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Report 4: Top 10 Selling Books */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex items-center mb-4">
+            <TrendingUp className="w-6 h-6 text-teal-600 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-800">Top 10 Selling Books (Last 3 Months)</h2>
+          </div>
+          <div className="mb-6">
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="copies" fill="#14b8a6" name="Copies Sold" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ISBN</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book Title</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Copies Sold</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Profit</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {topBooks?.map((book:any,idx :number) => (
+                  <tr key={book.book?.isbn || idx} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-lg font-bold text-teal-600">#{idx+1}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{book.book?.isbn}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{book.book?.title}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{book.quantity}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${book.totalprofit?.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Report 5: Book Order Count */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex items-center mb-4">
+            <Package className="w-6 h-6 text-red-600 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-800">Book Replenishment Orders</h2>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Select Book:</label>
+            <select
+              value={selectedBook}
+              onChange={(e) => setSelectedBook(e.target.value)}
+              className="border border-gray-300 rounded-lg px-4 py-2 w-full md:w-96 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              <option value="">Choose a book...</option>
+              {allBooks.map((book, index) => (
+                <option key={index} value={book.isbn}>{book.title}</option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-red-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600">Times Ordered (Replenishment)</p>
+              <p className="text-2xl font-bold text-red-600">{bookOrders?.numberoforders}</p>
+            </div>
+            <div className="bg-amber-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600">Amount ordered</p>
+              <p className="text-2xl font-bold text-amber-600">{bookOrders?.numberoforders * 30}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;
