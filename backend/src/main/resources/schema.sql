@@ -1,4 +1,4 @@
-create type role_enum as ENUM('Admin', 'Customer');
+-- create type role_enum as ENUM('Admin', 'Customer');
 CREATE TABLE IF NOT EXISTS Users
 (
     user_id          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS Publishers
     address      VARCHAR(255),
     phone        VARCHAR(20)
 );
-create type category_type as ENUM('Science', 'Art', 'Religion', 'History', 'Geography');
+-- create type category_type as ENUM('Science', 'Art', 'Religion', 'History', 'Geography');
 CREATE TABLE IF NOT EXISTS Books
 (
     isbn            VARCHAR(20) PRIMARY KEY,
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS BookAuthors
     FOREIGN KEY (isbn) REFERENCES Books (isbn),
     FOREIGN KEY (author_id) REFERENCES Authors (author_id)
 );
-CREATE TYPE order_status AS ENUM ('Pending', 'Confirmed');
+-- CREATE TYPE order_status AS ENUM ('Pending', 'Confirmed');
 CREATE TABLE IF NOT EXISTS PublisherOrders
 (
     order_id   INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -93,10 +93,25 @@ CREATE TABLE IF NOT EXISTS ShoppingCartItems
 );
 CREATE TABLE IF NOT EXISTS BillingInfo
 (
-    user_id         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id         INT PRIMARY KEY,
     expiration_date DATE        NOT NULL,
     billing_address VARCHAR     NOT NULL,
     card_number     VARCHAR(20) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES Users (user_id)
+    );
+
+-- Refresh tokens table for JWT authentication
+CREATE TABLE IF NOT EXISTS RefreshTokens
+(
+    token_id    INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id     INT       NOT NULL,
+    token       VARCHAR(500) NOT NULL UNIQUE,
+    expires_at  TIMESTAMP NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users (user_id) ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON RefreshTokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON RefreshTokens(token);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON RefreshTokens(expires_at);
 
