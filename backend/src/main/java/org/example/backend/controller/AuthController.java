@@ -27,6 +27,11 @@ public class AuthController {
             return ResponseEntity.ok("User registered successfully: " + user.getUsername());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            // Log the full exception for debugging
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage() + " (Check server logs for details)");
         }
     }
 
