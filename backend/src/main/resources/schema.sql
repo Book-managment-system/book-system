@@ -115,10 +115,12 @@ CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON RefreshTokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON RefreshTokens(token);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON RefreshTokens(expires_at);
 
-CREATE INDEX IF NOT EXISTS idx_books_title_trgm ON Books USING GIN (title pg_trgm_ops);
-CREATE INDEX IF NOT EXISTS idx_books_category ON Books(category);
-CREATE INDEX IF NOT EXISTS idx_authors_name_trgm ON Authors USING GIN (name pg_trgm_ops);
-CREATE INDEX IF NOT EXISTS idx_publishers_name_trgm ON Publishers USING GIN (name pg_trgm_ops);
+-- CREATE EXTENSION IF NOT EXISTS pg_trgm;
+--
+-- CREATE INDEX IF NOT EXISTS idx_books_title_trgm ON Books USING GIN (title pg_trgm_ops);
+-- CREATE INDEX IF NOT EXISTS idx_books_category ON Books(category);
+-- CREATE INDEX IF NOT EXISTS idx_authors_name_trgm ON Authors USING GIN (name pg_trgm_ops);
+-- CREATE INDEX IF NOT EXISTS idx_publishers_name_trgm ON Publishers USING GIN (name pg_trgm_ops);
 
 -- DROP TRIGGER IF EXISTS before_update_books ON Books;
 
@@ -130,4 +132,3 @@ CREATE INDEX IF NOT EXISTS idx_publishers_name_trgm ON Publishers USING GIN (nam
 --         RAISE EXCEPTION 'number of stocked books cannot be negative'
 -- END$$
 
--- CREATE EXTENSION IF NOT EXISTS pg_trgm;
