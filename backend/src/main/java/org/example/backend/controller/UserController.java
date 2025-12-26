@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/v1/api/user")
 
@@ -49,6 +51,17 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Unexpected server error");
+        }
+    }
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllusers() {
+        try {
+
+            List<User> profile = userService.getUsers();
+            return ResponseEntity.ok(profile);
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
     @GetMapping("/profile")
