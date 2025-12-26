@@ -57,6 +57,7 @@ public class CheckoutService {
                 billingInfo.setCardNumber(request.getCardNumber());
                 billingInfo.setExpirationDate(request.getExpirationDate());
                 billingInfo.setBillingAddress(request.getBillingAddress());
+                validateCreditCard(billingInfo.getCardNumber(), billingInfo.getExpirationDate());
                 billingInfo = billingInfoRepository.update(billingInfo);
             }
         }
