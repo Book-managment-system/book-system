@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import toast from "react-hot-toast";
 import { CheckCircle2, Clock, Package } from "lucide-react";
+import LogoutButton from "@/components/LogoutButton";
 
 export default function PublisherOrdersPage() {
     const router = useRouter();
@@ -78,12 +79,15 @@ export default function PublisherOrdersPage() {
                     <Package className="h-6 w-6" />
                     <h1 className="text-3xl font-bold">Publisher Orders</h1>
                 </div>
-                <Button
-                    variant="outline"
-                    onClick={() => router.push("/admin_dashboard")}
-                >
-                    Back to Dashboard
-                </Button>
+                <div className="flex gap-2">
+                    <LogoutButton />
+                    <Button
+                        variant="outline"
+                        onClick={() => router.push("/admin_dashboard")}
+                    >
+                        Back to Dashboard
+                    </Button>
+                </div>
             </div>
 
             <div className="mb-4 flex gap-2">

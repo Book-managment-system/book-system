@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { UserUpdate, updateProfile, getProfile } from "../../lib/updateProfileApi";
 import { useRouter } from "next/navigation";
+import LogoutButton from "@/components/LogoutButton";
 
 const ProfilePage: React.FC = () => {
   const router = useRouter();
@@ -70,6 +71,9 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className="max-w-xl mx-auto p-4">
+      <div className="flex justify-end mb-4">
+        <LogoutButton />
+      </div>
       <h1 className="text-2xl font-bold mb-4">Update Profile</h1>
 
       {message && (
@@ -155,6 +159,14 @@ const ProfilePage: React.FC = () => {
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             {submitting ? "Updating..." : "Update Profile"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.push("/home")}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Back to Home
           </button>
 
           <button

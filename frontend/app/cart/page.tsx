@@ -5,6 +5,7 @@ import CartSummary from "./CartSummary";
 import { CartBookPrice } from "../../lib/mockCartData";
 import { getCartItems, getCartTotal, removeBook, clearCart } from "../../lib/cartApi";
 import { useRouter } from "next/navigation";
+import LogoutButton from "@/components/LogoutButton";
 const CartPage: React.FC = () => {
     const router = useRouter(); // <-- initialize router
     const [cartItems, setCartItems] = useState<CartBookPrice[]>([]);
@@ -58,6 +59,9 @@ const CartPage: React.FC = () => {
 
     return (
         <div className="max-w-2xl mx-auto p-4">
+            <div className="flex justify-end mb-4">
+                <LogoutButton />
+            </div>
             <h1 className="text-2xl font-bold mb-4">Shopping Cart</h1>
 
             {cartItems.length === 0 ? (
