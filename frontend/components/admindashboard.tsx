@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Calendar, DollarSign, TrendingUp, Users, Package } from 'lucide-react';
 import axios from 'axios';
+import { redirect } from 'next/navigation';
 import { fetchBookReport, fetchTopBooks, fetchTopCustomers, fetchPreviousMonthSales, fetchDailySales } from '@/api/reports/reports';
+import { getAccessToken } from '@/lib/token-storage';
 const AdminDashboard = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedBook, setSelectedBook] = useState('');
@@ -11,7 +13,8 @@ const AdminDashboard = () => {
    const [topCustomers, setTopCustomers] = useState<any>(null);
    const [previousMonthSales, setPreviousMonthSales] = useState<any>(null);
    const [dailySales, setDailySales] = useState<any>(null);
-  const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5b3VzZSIsInVzZXJJZCI6MSwicm9sZSI6IkN1c3RvbWVyIiwidHlwZSI6ImFjY2VzcyIsImlhdCI6MTc2Njc1NzQ4OSwiZXhwIjoxNzY2NzU4Mzg5fQ.8WFmBQyUNumtpJzyh6Jh_uEaPsfaNrPfkyEEY6ipoGHE-0asayN0Xz4MNr55kGXnbq2Py-8b08g7cxFkcwtvjw"
+   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const token = getAccessToken()||"";
   React.useEffect(() => {
         const loadReport = async () => {
             try {
@@ -21,9 +24,15 @@ const AdminDashboard = () => {
                 );
                 console.log("Fetched orders:", data);
                 setBookOrders(data);
+                setErrors(prev => ({ ...prev, bookOrders: '' }));
             } catch (err: any) {
-                console.error("Error fetching report:", err);
-            } finally {
+                if (err.message === "FORBIDDEN") {
+                    setErrors(prev => ({ ...prev, bookOrders: "You do not have permission to view this data." }));
+                } else if (err.message === "UNAUTHORIZED") {
+                    redirect("/login");
+                } else {
+                    setErrors(prev => ({ ...prev, bookOrders: "Unexpected server error." }));
+                }
             }
         };
 
@@ -38,9 +47,15 @@ const AdminDashboard = () => {
                 );
                 console.log("Fetched orders:", data);
                 setTopBooks(data);
+                setErrors(prev => ({ ...prev, topBooks: '' }));
             } catch (err: any) {
-                console.error("Error fetching report:", err);
-            } finally {
+                if (err.message === "FORBIDDEN") {
+                    setErrors(prev => ({ ...prev, topBooks: "You do not have permission to view this data." }));
+                } else if (err.message === "UNAUTHORIZED") {
+                    redirect("/login");
+                } else {
+                    setErrors(prev => ({ ...prev, topBooks: "Unexpected server error." }));
+                }
             }
         };
 
@@ -55,9 +70,15 @@ const AdminDashboard = () => {
                 );
                 console.log("Fetched top customers:", data);
                 setTopCustomers(data);
+                setErrors(prev => ({ ...prev, topCustomers: '' }));
             } catch (err: any) {
-                console.error("Error fetching top customers:", err);
-            } finally {
+                if (err.message === "FORBIDDEN") {
+                    setErrors(prev => ({ ...prev, topCustomers: "You do not have permission to view this data." }));
+                } else if (err.message === "UNAUTHORIZED") {
+                    redirect("/login");
+                } else {
+                    setErrors(prev => ({ ...prev, topCustomers: "Unexpected server error." }));
+                }
             }
         };
 
@@ -72,9 +93,15 @@ const AdminDashboard = () => {
                 );
                 console.log("Fetched previous month sales:", data);
                 setPreviousMonthSales(data);
+                setErrors(prev => ({ ...prev, previousMonthSales: '' }));
             } catch (err: any) {
-                console.error("Error fetching previous month sales:", err);
-            } finally {
+                if (err.message === "FORBIDDEN") {
+                    setErrors(prev => ({ ...prev, previousMonthSales: "You do not have permission to view this data." }));
+                } else if (err.message === "UNAUTHORIZED") {
+                    redirect("/login");
+                } else {
+                    setErrors(prev => ({ ...prev, previousMonthSales: "Unexpected server error." }));
+                }
             }
         };
 
@@ -91,9 +118,15 @@ const AdminDashboard = () => {
                     );
                     console.log("Fetched daily sales:", data);
                     setDailySales(data);
+                    setErrors(prev => ({ ...prev, dailySales: '' }));
                 } catch (err: any) {
-                    console.error("Error fetching daily sales:", err);
-                } finally {
+                    if (err.message === "FORBIDDEN") {
+                        setErrors(prev => ({ ...prev, dailySales: "You do not have permission to view this data." }));
+                    } else if (err.message === "UNAUTHORIZED") {
+                        redirect("/login");
+                    } else {
+                        setErrors(prev => ({ ...prev, dailySales: "Unexpected server error." }));
+                    }
                 }
             }
         };
@@ -158,6 +191,11 @@ const AdminDashboard = () => {
             <DollarSign className="w-6 h-6 text-blue-600 mr-2" />
             <h2 className="text-xl font-semibold text-gray-800">Total Sales - Previous Month</h2>
           </div>
+          {errors.previousMonthSales && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {errors.previousMonthSales}
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-sm text-gray-600">Month</p>
@@ -180,6 +218,11 @@ const AdminDashboard = () => {
             <Calendar className="w-6 h-6 text-indigo-600 mr-2" />
             <h2 className="text-xl font-semibold text-gray-800">Sales on Specific Day</h2>
           </div>
+          {errors.dailySales && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {errors.dailySales}
+            </div>
+          )}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Select Date:</label>
             <input
@@ -235,6 +278,11 @@ const AdminDashboard = () => {
             <Users className="w-6 h-6 text-orange-600 mr-2" />
             <h2 className="text-xl font-semibold text-gray-800">Top 5 Customers (Last 3 Months)</h2>
           </div>
+          {errors.topCustomers && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {errors.topCustomers}
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead className="bg-gray-50">
@@ -265,6 +313,11 @@ const AdminDashboard = () => {
             <TrendingUp className="w-6 h-6 text-teal-600 mr-2" />
             <h2 className="text-xl font-semibold text-gray-800">Top 10 Selling Books (Last 3 Months)</h2>
           </div>
+          {errors.topBooks && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {errors.topBooks}
+            </div>
+          )}
           <div className="mb-6">
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={chartData}>
@@ -311,6 +364,11 @@ const AdminDashboard = () => {
             <Package className="w-6 h-6 text-red-600 mr-2" />
             <h2 className="text-xl font-semibold text-gray-800">Book Replenishment Orders</h2>
           </div>
+          {errors.bookOrders && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {errors.bookOrders}
+            </div>
+          )}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Select Book:</label>
             <select
