@@ -204,14 +204,24 @@ const AdminDashboard = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Admin Reports Dashboard</h1>
-          <Button
-            variant="outline"
-            onClick={() => router.push("/publisher-orders")}
-            className="flex items-center gap-2"
-          >
-            <ShoppingCart className="h-4 w-4" />
-            Manage Publisher Orders
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/admin_dashboard/users")}
+              className="flex items-center gap-2"
+            >
+              <Users className="h-4 w-4" />
+              Manage Users
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => router.push("/publisher-orders")}
+              className="flex items-center gap-2"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Manage Publisher Orders
+            </Button>
+          </div>
         </div>
 
         {/* Report 1: Previous Month Sales */}
