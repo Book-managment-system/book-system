@@ -14,6 +14,8 @@ const CheckoutPage: React.FC = () => {
     const [cardNumber, setCardNumber] = useState("");
     const [expirationDate, setExpirationDate] = useState("");
     const [billingAddress, setBillingAddress] = useState("");
+    const [cvv, setCvv] = useState("");
+    const [cvvError, setCvvError] = useState("");
 
     useEffect(() => {
         const fetchSavedCard = async () => {
@@ -29,6 +31,8 @@ const CheckoutPage: React.FC = () => {
                 console.error("Error fetching saved card:", err);
                 setUseSavedCard(false);
             } finally {
+                // Ensure CVV is always empty even if other card fields are filled from saved card
+                setCvv("");
                 setLoading(false);
             }
         };
@@ -38,6 +42,12 @@ const CheckoutPage: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // CVV must be exactly 3 digits and is not saved to DB
+        if (!/^\d{3}$/.test(cvv)) {
+            setCvvError("CVV must be exactly 3 digits");
+            return;
+        }
 
         if (!useSavedCard && (!cardNumber || !expirationDate || !billingAddress)) {
             alert("Please fill all required fields");
@@ -51,6 +61,8 @@ const CheckoutPage: React.FC = () => {
         try {
             const result = await submitCheckout(payload);
             alert(result.message);
+            // clear CVV after submit to ensure it never persists client-side
+            setCvv("");
             router.push("/cart");
         } catch (err: any) {
             alert(err.message || "Checkout failed");
@@ -117,6 +129,28 @@ const CheckoutPage: React.FC = () => {
                         </div>
                     </>
                 )}
+
+                {/* CVV is not persisted to the database and must always start empty.
+                    It is shown separately and is validated client-side to be exactly 3 digits. */}
+                <div className="mb-2">
+                    <label className="block font-semibold mb-1">CVV (3 digits)</label>
+                    <input
+                        type="text"
+                        inputMode="numeric"
+                        value={cvv}
+                        onChange={(e) => {
+                            // allow only digits and max length 3
+                            const onlyDigits = e.target.value.replace(/\D/g, "").slice(0, 3);
+                            setCvv(onlyDigits);
+                            if (cvvError) setCvvError("");
+                        }}
+                        className="w-32 border p-2 rounded"
+                        placeholder="123"
+                        aria-label="CVV"
+                        required
+                    />
+                    {cvvError && <p className="text-red-600 text-sm mt-1">{cvvError}</p>}
+                </div>
 
                 <div className="flex gap-2 mt-4">
                     <button
