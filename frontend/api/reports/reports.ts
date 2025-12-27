@@ -65,6 +65,15 @@ export const fetchPreviousMonthSales = async (
         throw new Error(text || "SERVER_ERROR");
     }
 
+    // Handle 204 No Content
+    if (response.status === 204) {
+        return {
+            totalSales: 0,
+            totalOrders: 0,
+            month: new Date().toLocaleString('default', { month: 'long' })
+        };
+    }
+
     console.log("HTTP status:", response.status);
 
     return response.json();
@@ -92,6 +101,11 @@ export const fetchDailySales = async (
 
     if (response.status === 403) {
         throw new Error("FORBIDDEN");
+    }
+
+    // Handle 204 No Content - return empty array instead of trying to parse JSON
+    if (response.status === 204) {
+        return [];
     }
 
     if (!response.ok) {

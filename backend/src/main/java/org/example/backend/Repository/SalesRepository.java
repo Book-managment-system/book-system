@@ -25,16 +25,15 @@ public class SalesRepository {
     public TotalSales getsales(){
         String sql =
                 "SELECT " +
-                        "   SUM(coi.quantity * coi.price) AS total_sales, " +
-                        "   COUNT(DISTINCT co.order_id) AS total_orders, " +
+                        "   COALESCE(SUM(coi.quantity * coi.price), 0) AS total_sales, " +
+                        "   COALESCE(COUNT(DISTINCT co.order_id), 0) AS total_orders, " +
                         "   TO_CHAR(date_trunc('month', CURRENT_DATE) - INTERVAL '1 month', 'Month') AS month " +
                         "FROM CustomerOrders co " +
-                        "JOIN CustomerOrderItems coi ON co.order_id = coi.order_id " +
+                        "LEFT JOIN CustomerOrderItems coi ON co.order_id = coi.order_id " +
                         "WHERE co.order_date >= date_trunc('month', CURRENT_DATE) - INTERVAL '1 month' " +
                         "AND co.order_date < date_trunc('month', CURRENT_DATE)";
 
-
-        TotalSales totalSales = jdbcTemplate.queryForObject(
+        List<TotalSales> results = jdbcTemplate.query(
                 sql,
                 (rs, rowNum) -> new TotalSales(
                         rs.getInt("total_sales"),   // sum of sales
@@ -42,8 +41,16 @@ public class SalesRepository {
                         rs.getString("month").trim() // month name (trim to remove spaces)
                 )
         );
-        return totalSales ;
-
+        
+        if (results.isEmpty()) {
+            // If no rows returned, return default values
+            String month = java.time.LocalDate.now().minusMonths(1).format(
+                    java.time.format.DateTimeFormatter.ofPattern("MMMM")
+            );
+            return new TotalSales(0, 0, month);
+        }
+        
+        return results.get(0);
     }
     public List<BookSalesHistory> getBookSalesHistoryByDate(String isbn,String date) {
         String sql = "SELECT " +
@@ -135,9 +142,12 @@ public class SalesRepository {
         }
     }
     public List<customerHistory> getTopCustomers() {
-        String sql = "SELECT u.user_id, u.first_name, u.last_name, SUM(co.total_amount) AS total_amount " +
+        String sql = "SELECT u.user_id, u.first_name, u.last_name, " +
+                "SUM(co.total_amount) AS total_amount, " +
+                "COALESCE(SUM(coi.quantity), 0) AS total_quantity " +
                 "FROM CustomerOrders co " +
                 "JOIN Users u ON co.user_id = u.user_id " +
+                "LEFT JOIN CustomerOrderItems coi ON co.order_id = coi.order_id " +
                 "GROUP BY u.user_id, u.first_name, u.last_name " +
                 "ORDER BY total_amount DESC " +
                 "LIMIT 5";
@@ -148,8 +158,8 @@ public class SalesRepository {
             user.setFirstName(rs.getString("first_name"));
             user.setLastName(rs.getString("last_name"));
 
-            int numberOfOrders = rs.getInt("total_amount");
-            return new customerHistory(user, numberOfOrders);
+            int totalQuantity = rs.getInt("total_quantity");
+            return new customerHistory(user, totalQuantity);
         });
 
         return results;

@@ -24,9 +24,7 @@ public class ReportsController {
    @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<TotalSales> getsales() {
         TotalSales history = reportsService.getsalesService();
-        if (history == null) {
-            return ResponseEntity.noContent().build(); // 204 No Content
-        }
+        // Always return OK with data, even if values are 0
         return ResponseEntity.ok(history);
 
     }
@@ -35,9 +33,7 @@ public class ReportsController {
     public ResponseEntity<List<BookSalesHistory>> getBooksales(
             @RequestParam(required = false) String date) {
         List<BookSalesHistory> history = reportsService.getBookSalesHistoryService("0", date);
-        if (history.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 204
-        }
+        // Return empty array instead of 204 to avoid JSON parse errors
         return ResponseEntity.ok(history);
 
     }
