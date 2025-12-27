@@ -29,8 +29,8 @@ export async function searchBooksServer(
 
     const queryString = queryParams.toString();
     const url = `/books${queryString ? `?${queryString}` : ""}`;
-    
-const response = await apiRequest(url, {
+
+    const response = await apiRequest(url, {
         method: "GET",
     });
 
@@ -38,5 +38,14 @@ const response = await apiRequest(url, {
         throw new Error(await responseErrorToString(response));
     }
 
+    return response.json();
+}
+
+// Get all books
+export async function getAllBooks(): Promise<Book[]> {
+    const response = await apiRequest("/books", { method: "GET" });
+    if (!response.ok) {
+        throw new Error(await responseErrorToString(response));
+    }
     return response.json();
 }
