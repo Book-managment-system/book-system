@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { toast } from "react-hot-toast";
 import { Book } from "@/types/book";
 import { addBooks } from "@/api/cart/add-books";
+import { Plus } from "lucide-react";
 
 interface BookComponentProps {
     book: Book;
@@ -12,6 +13,11 @@ interface BookComponentProps {
 
 const BookComponent: React.FC<BookComponentProps> = ({ book, onAddToCart }) => {
     const [adding, setAdding] = useState(false);
+    const [quantity, setQuantity] = useState<number>(1);
+
+    const handleIncrement = () => {
+        setQuantity((q) => Math.min(q + 1, book.numberOfBooks));
+    };
 
     const handleAddToCart = async () => {
         if (onAddToCart) {
@@ -23,8 +29,8 @@ const BookComponent: React.FC<BookComponentProps> = ({ book, onAddToCart }) => {
 
         setAdding(true);
         try {
-            await addBooks([{ isbn: book.isbn, quantity: 1 }]);
-            toast.success(`Added "${book.title}" to cart`);
+            await addBooks([{ isbn: book.isbn, quantity }]);
+            toast.success(`Added "${book.title}" x${quantity} to cart`);
         } catch (err) {
             console.error("Failed to add to cart", err);
             toast.error("Failed to add to cart");
@@ -95,6 +101,28 @@ const BookComponent: React.FC<BookComponentProps> = ({ book, onAddToCart }) => {
                             Low Stock Alert
                         </div>
                     )}
+                </div>
+
+                {/* Quantity selector */}
+                <div className="flex items-center justify-between mt-2">
+                    <span className="text-sm text-gray-600">Quantity:</span>
+                    <div className="flex items-center gap-2">
+                        <span className="min-w-[2ch] text-center font-semibold text-gray-800">
+                            {quantity}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={handleIncrement}
+                            disabled={quantity >= book.numberOfBooks}
+                            className={`p-2 rounded-md border transition-colors ${
+                                quantity >= book.numberOfBooks
+                                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                                    : "bg-white hover:bg-gray-100"
+                            }`}
+                            aria-label="Increase quantity">
+                            <Plus size={16} />
+                        </button>
+                    </div>
                 </div>
 
                 <button
