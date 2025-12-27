@@ -2,7 +2,6 @@ package org.example.backend.controller;
 
 import org.example.backend.model.dto.ChangePasswordRequest;
 import org.example.backend.model.dto.UserUpdate;
-import org.example.backend.model.entity.User;
 import org.example.backend.model.enums.Role;
 import org.example.backend.service.JwtService;
 import org.example.backend.service.UserService;
@@ -30,7 +29,13 @@ public class UserController {
             @RequestBody UserUpdate userUpdate) {
 
         try {
-            Integer userIdFromToken = extractUserId(authHeader);
+            String token = extractToken(authHeader);
+            
+            if (!jwtService.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Invalid or expired token");
+            }
+            Integer userIdFromToken = jwtService.extractUserId(token);
 
             if (!userIdFromToken.equals(userUpdate.getUserId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -54,7 +59,14 @@ public class UserController {
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String authHeader) {
         try {
-            Integer userId = extractUserId(authHeader);
+            String token = extractToken(authHeader);
+            
+            if (!jwtService.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Invalid or expired token");
+            }
+            
+            Integer userId = jwtService.extractUserId(token);
 
             UserUpdate profile = userService.getUser(userId);
 
@@ -74,7 +86,13 @@ public class UserController {
             @RequestBody ChangePasswordRequest request) {
 
         try {
-            Integer userIdFromToken = extractUserId(authHeader);
+            String token = extractToken(authHeader);
+            
+            if (!jwtService.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Invalid or expired token");
+            }
+            Integer userIdFromToken = jwtService.extractUserId(token);
 
             userService.updatePassword(
                     userIdFromToken,
@@ -99,7 +117,13 @@ public class UserController {
             @PathVariable int userId) {
 
         try {
-            Role role = extractRole(authHeader);
+            String token = extractToken(authHeader);
+            
+            if (!jwtService.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Invalid or expired token");
+            }
+            Role role = jwtService.extractRole(token);
 
             if (role != Role.Admin) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -124,8 +148,14 @@ public class UserController {
             @PathVariable int userId) {
 
         try {
-            Integer requesterId = extractUserId(authHeader);
-            Role role = extractRole(authHeader);
+            String token = extractToken(authHeader);
+            
+            if (!jwtService.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Invalid or expired token");
+            }
+            Integer requesterId = jwtService.extractUserId(token);
+            Role role = jwtService.extractRole(token);
 
             if (role != Role.Admin) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -147,16 +177,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Unexpected server error");
         }
-    }
-
-    private Integer extractUserId(String authHeader) {
-        String token = extractToken(authHeader);
-        return jwtService.extractUserId(token);
-    }
-
-    private Role extractRole(String authHeader) {
-        String token = extractToken(authHeader);
-        return jwtService.extractRole(token);
     }
 
     private String extractToken(String authHeader) {
