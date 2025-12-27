@@ -215,6 +215,14 @@ const AdminDashboard = () => {
             </Button>
             <Button
               variant="outline"
+              onClick={() => router.push("/books")}
+              className="flex items-center gap-2"
+            >
+              <Package className="h-4 w-4" />
+              Manage Books
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => router.push("/publisher-orders")}
               className="flex items-center gap-2"
             >

@@ -10,6 +10,7 @@ export async function updateBook(
         method: "PUT",
         body: JSON.stringify(payload),
     });
+    console.log(res)
     if (!res.ok) {
         throw new Error(await responseErrorToString(res));
     }

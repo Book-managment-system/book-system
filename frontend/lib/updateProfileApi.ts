@@ -64,3 +64,14 @@ export async function updatePassword(
     message: message || (res.ok ? "Password updated successfully" : "Update failed"),
   };
 }
+
+export async function getUserRole(): Promise<string> {
+  const res = await apiRequest("/user/role");
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
+  const data = await res.text();
+  return data;
+}

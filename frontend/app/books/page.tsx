@@ -17,6 +17,8 @@ import { createBook, CreateBookPayload } from "@/api/books/create";
 import { updateBook } from "@/api/books/update";
 import { toast } from "react-hot-toast";
 import { XIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 const categories = [
     "Science",
@@ -27,11 +29,14 @@ const categories = [
 ] as const;
 
 export default function ManageBooksPage() {
+    const router = useRouter();
     const [books, setBooks] = useState<Book[]>([]);
+    const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [editing, setEditing] = useState<Book | null>(null);
     const [creating, setCreating] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
     const modalOpen = editing !== null || creating;
 
     const [form, setForm] = useState<CreateBookPayload>({
@@ -52,6 +57,7 @@ export default function ManageBooksPage() {
         try {
             const data = await getAllBooks();
             setBooks(data);
+            setFilteredBooks(data);
         } catch (err) {
             setError(
                 err instanceof Error ? err.message : "Failed to load books"
@@ -64,6 +70,20 @@ export default function ManageBooksPage() {
     useEffect(() => {
         load();
     }, []);
+
+    useEffect(() => {
+        if (searchTerm.trim() === "") {
+            setFilteredBooks(books);
+        } else {
+            const filtered = books.filter(book =>
+                book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                book.isbn.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (book.authorName && book.authorName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                book.category.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredBooks(filtered);
+        }
+    }, [searchTerm, books]);
 
     const startCreate = () => {
         setCreating(true);
@@ -126,8 +146,28 @@ export default function ManageBooksPage() {
         <div className="min-h-screen bg-gray-50 py-8 px-4">
             <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-4">
-                    <h1 className="text-2xl font-bold">Manage Books</h1>
+                    <div className="flex items-center gap-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => router.push("/admin_dashboard")}
+                            className="flex items-center gap-2"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Back to Dashboard
+                        </Button>
+                        <h1 className="text-2xl font-bold">Manage Books</h1>
+                    </div>
                     <Button onClick={startCreate}>Add New Book</Button>
+                </div>
+
+                <div className="mb-4">
+                    <Input
+                        type="text"
+                        placeholder="Search books by title, ISBN, author, or category..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="max-w-md"
+                    />
                 </div>
 
                 {error && (
@@ -163,8 +203,14 @@ export default function ManageBooksPage() {
                                         No books found
                                     </TableCell>
                                 </TableRow>
+                            ) : filteredBooks.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={8}>
+                                        No books match your search
+                                    </TableCell>
+                                </TableRow>
                             ) : (
-                                books.map((b) => (
+                                filteredBooks.map((b) => (
                                     <TableRow key={b.isbn}>
                                         <TableCell>{b.isbn}</TableCell>
                                         <TableCell>{b.title}</TableCell>

@@ -9,12 +9,14 @@ import { Book, BookSearchParams } from "@/types/book";
 import { searchBooksServer } from "@/lib/bookApi";
 import LogoutButton from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
+import { getUserRole } from "@/lib/updateProfileApi";
 
 export default function Home() {
     const searchParams = useSearchParams();
     const [books, setBooks] = useState<Book[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [userRole, setUserRole] = useState<string | null>(null);
 
     // Memoize params from URL to avoid unnecessary fetches
     const params = useMemo<BookSearchParams>(() => {
@@ -60,15 +62,31 @@ export default function Home() {
         };
     }, [params]);
 
+    useEffect(() => {
+        const fetchUserRole = async () => {
+            try {
+                const role = await getUserRole();
+                setUserRole(role);
+            } catch (err) {
+                console.error("Failed to fetch user role:", err);
+                setUserRole(null);
+            }
+        };
+
+        fetchUserRole();
+    }, []);
+
     return (
         <div className="min-h-screen bg-gray-50 py-8 px-4">
             <div className="flex justify-end p-4 gap-4">
                 <Button asChild>
                     <Link href="/profile">Profile</Link>
                 </Button>
-                <Button asChild>
-                    <Link href="/admin_dashboard">Admin Dashboard</Link>
-                </Button>
+                {userRole === 'Admin' && (
+                    <Button asChild>
+                        <Link href="/admin_dashboard">Admin Dashboard</Link>
+                    </Button>
+                )}
                 <Button asChild>
                     <Link href="/cart">Cart</Link>
                 </Button>
