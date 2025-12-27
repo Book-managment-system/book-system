@@ -5,7 +5,7 @@ export interface Book {
     publisherId: number;
     publisherName: string;
     authorName: string | null;
-    publicationYear: number;
+    publicationYear: number | null;
     sellingPrice: number;
     category: "Science" | "Art" | "Religion" | "History" | "Geography";
     numberOfBooks: number;
